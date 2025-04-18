@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Adventure Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            padding: 20px;
+        }
+        #game-log {
+            border: 1px solid #ccc;
+            background: #fff;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        #user-input {
+            width: calc(100% - 120px);
+            padding: 10px;
+            font-size: 16px;
+        }
+        #submit-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #submit-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Text Adventure Game</h1>
+    <div id="game-log"></div>
+    <input type="text" id="user-input" placeholder="What do you want to do?">
+    <button id="submit-btn">Submit</button>
+
+    <script>
+        const gameLog = document.getElementById('game-log');
+        const userInput = document.getElementById('user-input');
+        const submitBtn = document.getElementById('submit-btn');
+
+        // Initial game state
+        let gameState = {
+            location: 'a dark forest',
+            inventory: [],
+            health: 100,
+        };
+
+        // Function to log messages to the game log
+        function logMessage(message) {
+            const newMessage = document.createElement('div');
+            newMessage.textContent = message;
+            gameLog.appendChild(newMessage);
+            gameLog.scrollTop = gameLog.scrollHeight; // Auto-scroll to the latest message
+        }
+
+        // Function to generate a response based on user input
+        function generateResponse(input) {
+            input = input.toLowerCase();
+            let response = "";
+
+            if (input.includes('look')) {
+                response = `You look around and find yourself in ${gameState.location}.`;
+            } else if (input.includes('inventory')) {
+                response = `You check your inventory: ${gameState.inventory.length ? gameState.inventory.join(', ') : 'nothing'}.`;
+            } else if (input.includes('health')) {
+                response = `You have ${gameState.health} health remaining.`;
+            } else {
+                const randomEvents = [
+                    "A mysterious figure approaches you from the shadows.",
+                    "You hear a rustling noise nearby.",
+                    "A sudden chill runs down your spine.",
+                    "You find a strange glowing object on the ground."
+                ];
+                response = randomEvents[Math.floor(Math.random() * randomEvents.length)];
+            }
+
+            return response;
+        }
+
+        // Handle user input
+        submitBtn.addEventListener('click', () => {
+            const input = userInput.value.trim();
+            if (input) {
+                logMessage(`> ${input}`);
+                const response = generateResponse(input);
+                logMessage(response);
+                userInput.value = '';
+            }
+        });
+
+        // Initial game introduction
+        logMessage("Welcome to the adventure! You find yourself in a dark forest. What do you want to do?");
+    </script>
+</body>
+</html>
