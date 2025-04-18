@@ -53,6 +53,11 @@
             location: 'a dark forest',
             inventory: [],
             health: 100,
+            paths: [
+                'a narrow dirt trail leading deeper into the forest',
+                'a faintly visible path covered in fallen leaves',
+                'a small clearing with a strange glowing stone'
+            ]
         };
 
         // Function to log messages to the game log
@@ -69,11 +74,15 @@
             let response = "";
 
             if (input.includes('look')) {
-                response = `You look around and find yourself in ${gameState.location}.`;
+                response = `You look around and see ${gameState.paths.join(', ')}.`;
             } else if (input.includes('inventory')) {
                 response = `You check your inventory: ${gameState.inventory.length ? gameState.inventory.join(', ') : 'nothing'}.`;
             } else if (input.includes('health')) {
                 response = `You have ${gameState.health} health remaining.`;
+            } else if (input.includes('move') || input.includes('walk')) {
+                const randomPath = gameState.paths[Math.floor(Math.random() * gameState.paths.length)];
+                response = `You move forward and find yourself on ${randomPath}.`;
+                gameState.location = randomPath; // Update location
             } else {
                 const randomEvents = [
                     "A mysterious figure approaches you from the shadows.",
