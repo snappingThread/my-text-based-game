@@ -48,67 +48,70 @@
         const userInput = document.getElementById('user-input');
         const submitBtn = document.getElementById('submit-btn');
 
-        // Initial game state
+        // Your OpenAI API Key (WARNING: Do not use in production!)
+        const OPENAI_API_KEY = 'your-openai-api-key-here';
+
         let gameState = {
-            location: 'a dark forest',
-            inventory: [],
-            health: 100,
-            paths: [
-                'a narrow dirt trail leading deeper into the forest',
-                'a faintly visible path covered in fallen leaves',
-                'a small clearing with a strange glowing stone'
-            ]
+            location: 'a dark room',
+            abilities: ['wind magic', 'water manipulation'],
+            inventory: ['old sword', 'mystic stone'],
+            health: 100
         };
 
-        // Function to log messages to the game log
         function logMessage(message) {
             const newMessage = document.createElement('div');
             newMessage.textContent = message;
             gameLog.appendChild(newMessage);
-            gameLog.scrollTop = gameLog.scrollHeight; // Auto-scroll to the latest message
+            gameLog.scrollTop = gameLog.scrollHeight;
         }
 
-        // Function to generate a response based on user input
-        function generateResponse(input) {
-            input = input.toLowerCase();
-            let response = "";
-
-            if (input.includes('look')) {
-                response = `You look around and see ${gameState.paths.join(', ')}.`;
-            } else if (input.includes('inventory')) {
-                response = `You check your inventory: ${gameState.inventory.length ? gameState.inventory.join(', ') : 'nothing'}.`;
-            } else if (input.includes('health')) {
-                response = `You have ${gameState.health} health remaining.`;
-            } else if (input.includes('move') || input.includes('walk')) {
-                const randomPath = gameState.paths[Math.floor(Math.random() * gameState.paths.length)];
-                response = `You move forward and find yourself on ${randomPath}.`;
-                gameState.location = randomPath; // Update location
-            } else {
-                const randomEvents = [
-                    "A mysterious figure approaches you from the shadows.",
-                    "You hear a rustling noise nearby.",
-                    "A sudden chill runs down your spine.",
-                    "You find a strange glowing object on the ground."
-                ];
-                response = randomEvents[Math.floor(Math.random() * randomEvents.length)];
-            }
-
-            return response;
-        }
-
-        // Handle user input
-        submitBtn.addEventListener('click', () => {
+        submitBtn.addEventListener('click', async () => {
             const input = userInput.value.trim();
             if (input) {
                 logMessage(`> ${input}`);
-                const response = generateResponse(input);
+                const response = await getGameResponse(input);
                 logMessage(response);
                 userInput.value = '';
             }
         });
 
-        // Initial game introduction
-        logMessage("Welcome to the adventure! You find yourself in a dark forest. What do you want to do?");
+        // Function to send the player's input to OpenAI API and get a response
+        async function getGameResponse(playerInput) {
+            try {
+                const response = await fetch('https://api.openai.com/v1/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-3.5-turbo',  // Use GPT-3.5 for free-tier access
+                        prompt: generateGamePrompt(playerInput, gameState),
+                        max_tokens: 150,  // Adjust for desired response length
+                        temperature: 0.7,  // Adjust for randomness
+                    }),
+                });
+
+                const data = await response.json();
+                return data.choices[0].text.trim();
+            } catch (error) {
+                console.error('Error:', error);
+                return 'Something went wrong. Try again.';
+            }
+        }
+
+        // Function to generate the game prompt for GPT-3.5 based on player input and game state
+        function generateGamePrompt(playerInput, gameState) {
+            return `
+            You are in a text-based adventure game where the player can do anything.
+            The player has the following abilities and inventory: ${JSON.stringify(gameState)}
+            The player's input is: "${playerInput}"
+            Based on this, generate a unique, context-aware continuation of the story.
+            `;
+        }
+
+        // Initialize the game
+        logMessage("Welcome to the adventure! You awaken in a small, dimly lit room, the smell of damp stone filling the air. What do you want to do?");
     </script>
 </body>
 </html>
